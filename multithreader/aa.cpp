@@ -1,0 +1,40 @@
+#include "simple-multithreader.h"
+#include <assert.h>
+
+int main(int argc, char **argv) {
+    // Initialize problem size
+    int numThread = argc > 1 ? atoi(argv[1]) : 2;
+    int size = argc > 2 ? atoi(argv[2]) : 48000000;
+
+    // Allocate vectors
+    int *A = new int[size];
+    int *B = new int[size];
+    int *C = new int[size];
+
+    // Initialize the vectors
+    std::fill(A, A + size, 1);
+    std::fill(B, B + size, 1);
+    std::fill(C, C + size, 0);
+
+    // Define the lambda function for vector addition
+    auto vectorAdditionLambda = [&](int i) {
+        C[i] = A[i] + B[i];
+    };
+
+    // Use the parallel_for method from SimpleMultithreader
+    SimpleMultithreader multithreader;
+    multithreader.parallel_for(0, size, std::move(vectorAdditionLambda), numThread);
+
+    // Verify the result vector
+    for (int i = 0; i < size; i++)
+        assert(C[i] == 2);
+
+    printf("Test Success\n");
+
+    // Cleanup memory
+    delete[] A;
+    delete[] B;
+    delete[] C;
+
+    return 0;
+}
